@@ -1,1 +1,2 @@
-zhiwen2/zhiwen2
+./cmd/client
+./cmd/server
