@@ -6,6 +6,8 @@ import (
 	"strings"
 	"fmt"
 	"strconv"
+	"../fileops"
+	"../decode"
 )
 
 type Server struct {
@@ -21,7 +23,7 @@ func (s *Server) Init() {
 	common.CheckError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	common.CheckError(err)
-	request := make([]byte, 128)
+	request := make([]byte, fileops.BUF_SIZE)
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -32,8 +34,10 @@ func (s *Server) Init() {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Println(string(request))
-		request = make([]byte, 128)
+
+		//fmt.Println(string(request))
+		decode.Decode(request)
+		request = make([]byte, fileops.BUF_SIZE)
 	}
 }
 
