@@ -5,5 +5,6 @@ import (
 )
 func main() {
 	server := nettools.NewServer()
-	server.Init()
+	listener := server.Init()
+	server.Run(listener)
 }

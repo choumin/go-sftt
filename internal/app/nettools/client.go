@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"fmt"
 	"../encode"
+	"../fileops"
+	"../dirops"
 )
 
 type Client struct {
@@ -29,11 +31,29 @@ func (c *Client) Connect() {
 	common.CheckError(err)
 	
 }
-func (c *Client) Send(path string) {
-	buf := encode.Encode(path)
-	c.conn.Write(buf[0:len(buf)])
-}
+//func (c *Client) Send(path string) {
+//	buf := encode.Encode(path)
+//	c.conn.Write(buf[0:len(buf)])
+//}
 func NewClient() (c *Client) {
 	c = &Client{}
 	return
+}
+func (c *Client) SendBytes(bytes []byte) {
+	buf := encode.EncodeBytes(bytes)
+	c.conn.Write(buf[0 : len(buf)])
+}
+func (c *Client) SendFile(path string) {
+	metaFileContent := fileops.GenerateMetaFileContent(path)
+	c.SendBytes(metaFileContent)
+}
+func (c *Client) SendDir(path string) {
+	metaFileContent := dirops.GenerateMetaFileContent(path)
+	c.SendBytes(metaFileContent)
+
+	files := dirops.GetAllFilesFromDir(path)
+	for _, file := range files {
+		bytes := fileops.FetchAllBytes(file)
+		c.SendBytes(bytes)
+	}
 }

@@ -1,15 +1,23 @@
 package fileops
 
 import (
-    "os"
-    "../common"
-    "strings"
     "bufio"
+    "bytes"
+    "encoding/binary"
     "fmt"
+    "github.com/choumin/sftt/internal/app/common"
     "io/ioutil"
+    "os"
+    "strings"
 )
 
-const BUF_SIZE = 1024
+type MetaFileContent struct{
+    FileType uint16
+    FileNameLen uint8
+    FileName [common.MAX_FILE_NAME_LEN]byte
+}
+
+const BUF_SIZE = 1024000
 const FILE_NAME_WRAPPER_BEGIN = "FILE_NAME_BEGIN"
 const FILE_NAME_WRAPPER_END = "FILE_NAME_END"
 const DIR_WRAPPER_FLAG = "DIR"
@@ -78,4 +86,45 @@ func DecodeFileContent(data []byte) {
 }
 func DecodeDirContent(data []byte) {
 
+}
+func getFileName(path string) (string) {
+    index := strings.LastIndex(path, "/")
+    if index == -1 {
+        return path
+    }
+    return path[index + 1 : ]
+}
+func (obj *MetaFileContent)structToByteArray() ([]byte, error) {
+    buf := new(bytes.Buffer)
+    if err := binary.Write(buf, binary.LittleEndian, obj); err != nil {
+        fmt.Println("write failed: ", err)
+        return nil, err
+    }
+    return buf.Bytes(), nil
+}
+func GenerateMetaFileContent(path string) (data []byte) {
+    mateFileContent := &MetaFileContent{}
+    mateFileContent.FileType = common.FILE_TYPE_MAGIC_FILE
+    tmp := []byte(getFileName(path))
+    mateFileContent.FileNameLen = uint8(len(tmp))
+    for i, byte := range tmp {
+        if (i >= common.MAX_FILE_NAME_LEN) {
+            break
+        }
+        mateFileContent.FileName[i] = byte
+    }
+
+    fmt.Println(mateFileContent.FileType)
+    fmt.Println(mateFileContent.FileNameLen)
+    fmt.Println(mateFileContent.FileName)
+    //fmt.Print(len(mateFileContent.FileName))
+    data, _ = mateFileContent.structToByteArray()
+    //fmt.Println(data)
+    //copy(mateFileContent.FileName, [common.MAX_FILE_NAME_LEN]byte(getFileName(path)))
+    return
+}
+
+func FetchAllBytes(path string) (data []byte) {
+
+    return
 }
